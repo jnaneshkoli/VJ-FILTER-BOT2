@@ -1,0 +1,100 @@
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/session/session.py", line 377, in send
+    RPCError.raise_it(result, type(data))
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/errors/rpc_error.py", line 93, in raise_it
+    raise getattr(
+pyrogram.errors.exceptions.forbidden_403.ChatWriteForbidden: Telegram says: [403 CHAT_WRITE_FORBIDDEN] (caused by "messages.SendMessage") Pyrogram 2.3.45 thinks: You can't write in this chat
+11:38:25 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - 'str' object has no attribute 'get'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 58, in give_filter
+    await auto_filter(client, message.text, message, reply_msg, ai_search)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2582, in auto_filter
+    return await advantage_spell_chok(client, name, msg, reply_msg, ai_search)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2795, in advantage_spell_chok
+    movielist += [movie.get('title') for movie in movies]
+                  ^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+11:38:43 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - 'str' object has no attribute 'get'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 58, in give_filter
+    await auto_filter(client, message.text, message, reply_msg, ai_search)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2582, in auto_filter
+    return await advantage_spell_chok(client, name, msg, reply_msg, ai_search)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2795, in advantage_spell_chok
+    movielist += [movie.get('title') for movie in movies]
+                  ^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+11:40:42 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - 'str' object has no attribute 'get'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 58, in give_filter
+    await auto_filter(client, message.text, message, reply_msg, ai_search)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2582, in auto_filter
+    return await advantage_spell_chok(client, name, msg, reply_msg, ai_search)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2795, in advantage_spell_chok
+    movielist += [movie.get('title') for movie in movies]
+                  ^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+11:41:09 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - too many values to unpack (expected 2)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/channel.py", line 15, in media
+    await save_file(media)
+  File "/VJ-FILTER-BOT/database/ia_filterdb.py", line 30, in save_file
+    file_id, file_ref = unpack_new_file_id((getattr(media, "file_id", "")))
+    ^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+11:41:09 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - too many values to unpack (expected 2)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/channel.py", line 15, in media
+    await save_file(media)
+  File "/VJ-FILTER-BOT/database/ia_filterdb.py", line 30, in save_file
+    file_id, file_ref = unpack_new_file_id((getattr(media, "file_id", "")))
+    ^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+11:41:09 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - too many values to unpack (expected 2)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/channel.py", line 15, in media
+    await save_file(media)
+  File "/VJ-FILTER-BOT/database/ia_filterdb.py", line 30, in save_file
+    file_id, file_ref = unpack_new_file_id((getattr(media, "file_id", "")))
+    ^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+11:41:09 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - too many values to unpack (expected 2)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/channel.py", line 15, in media
+    await save_file(media)
+  File "/VJ-FILTER-BOT/database/ia_filterdb.py", line 30, in save_file
+    file_id, file_ref = unpack_new_file_id((getattr(media, "file_id", "")))
+    ^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+11:41:22 AM - 76 - root - idle - INFO - Stop signal received (SIGTERM). Exiting...
