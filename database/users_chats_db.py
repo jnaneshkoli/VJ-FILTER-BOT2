@@ -76,6 +76,11 @@ class Database:
             caption=None,
             message_command=None,
             save=False,
+            verify_status=dict(
+                is_verified=False,
+                verified_time=None,
+                expire_time=None,
+            ),
             ban_status=dict(
                 is_banned=False,
                 ban_reason="",
@@ -305,7 +310,38 @@ class Database:
 
     async def get_save(self, id):
         user = await self.col.find_one({'id': int(id)})
-        return user.get('save', False) 
-    
+        return user.get('save', False)
+
+    async def set_verified(self, user_id):
+        verify_time = datetime.datetime.now()
+        expire_time = verify_time + datetime.timedelta(hours=24)
+        verify_status = dict(
+            is_verified=True,
+            verified_time=verify_time,
+            expire_time=expire_time
+        )
+        await self.col.update_one({'id': int(user_id)}, {'$set': {'verify_status': verify_status}})
+
+    async def get_verify_status(self, user_id):
+        user = await self.col.find_one({'id': int(user_id)})
+        if not user:
+            return dict(is_verified=False, verified_time=None, expire_time=None)
+        verify_status = user.get('verify_status', dict(is_verified=False, verified_time=None, expire_time=None))
+
+        # Check if verification has expired
+        if verify_status.get('expire_time') and verify_status.get('expire_time') < datetime.datetime.now():
+            await self.col.update_one({'id': int(user_id)}, {'$set': {'verify_status.is_verified': False}})
+            return dict(is_verified=False, verified_time=None, expire_time=None)
+
+        return verify_status
+
+    async def remove_verification(self, user_id):
+        verify_status = dict(
+            is_verified=False,
+            verified_time=None,
+            expire_time=None
+        )
+        await self.col.update_one({'id': int(user_id)}, {'$set': {'verify_status': verify_status}})
+
 
 db = Database(USER_DB_URI, DATABASE_NAME)

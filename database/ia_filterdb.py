@@ -8,6 +8,10 @@ from pyrogram.file_id import FileId
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from info import FILE_DB_URI, SEC_FILE_DB_URI, DATABASE_NAME, COLLECTION_NAME, MULTIPLE_DATABASE, USE_CAPTION_FILTER, MAX_B_TN
+import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 # First Database For File Saving 
 client = MongoClient(FILE_DB_URI)
@@ -21,39 +25,108 @@ sec_col = sec_db[COLLECTION_NAME]
 
 
 async def save_file(media):
-    """Save file in the database."""
-    
-    file_id = unpack_new_file_id(media.file_id)
-    file_name = clean_file_name(media.file_name)
-    
-    file = {
-        'file_id': file_id,
-        'file_name': file_name,
-        'file_size': media.file_size,
-        'caption': media.caption.html if media.caption else None
-    }
+    """Save file in database"""
 
-    if is_file_already_saved(file_id, file_name):
-        return False, 0
+    file_id, file_ref = unpack_new_file_id((getattr(media, "file_id", "")))
+    file_name = re.sub(r"(_|\-|\.|\+)", " ", str(media.file_name))
+    caption = getattr(media, "caption", "")
+    try:
+        language = await detect_language(file_name)
+    except:
+        language = ['No match']
+
+    file = Media(
+        file_id=file_id,
+        file_ref=file_ref,
+        file_name=file_name,
+        file_size=media.file_size,
+        file_type=media.mime_type,
+        caption=caption,
+        language=language
+    )
 
     try:
-        col.insert_one(file)
-        print(f"{file_name} is successfully saved.")
-        return True, 1
-    except DuplicateKeyError:
-        print(f"{file_name} is already saved.")
-        return False, 0
-    except:
-        if MULTIPLE_DATABASE:
-            try:
-                sec_col.insert_one(file)
-                print(f"{file_name} is successfully saved.")
-                return True, 1
-            except DuplicateKeyError:
-                print(f"{file_name} is already saved.")
-                return False, 0
-        else:
-            print("Your Current File Database Is Full, Turn On Multiple Database Feature And Add Second File Mongodb To Save File.")
+        await file.commit()
+        # Check if this is a new file and trigger movie update post
+        from info import AUTO_POST_MOVIES, MOVIE_UPDATE_CHANNEL
+        if AUTO_POST_MOVIES and MOVIE_UPDATE_CHANNEL != 0:
+            asyncio.create_task(post_to_movie_channel(file_name, file_id))
+    except DuplicateKeyError:      
+        logger.warning(
+            '[File - %s] is already saved in database',
+            file_name
+        )
+        return False, 2
+    else:
+        logger.info('[File - %s] is saved to database', file_name)
+        return True, 0
+
+async def post_to_movie_channel(file_name, file_id):
+    """Post new movie file to update channel"""
+    try:
+        from bot import Client
+        from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+        from info import MOVIE_UPDATE_CHANNEL, temp
+
+        # Create a clean movie name for display
+        movie_name = clean_movie_name(file_name)
+
+        # Check if this movie already exists in channel and update/delete old post
+        await check_and_update_existing_post(movie_name, file_id)
+
+        # Create inline keyboard with download button
+        buttons = [[
+            InlineKeyboardButton('📥 Get File', url=f'https://telegram.me/{temp.U_NAME}?start=files_{file_id}')
+        ]]
+        reply_markup = InlineKeyboardMarkup(buttons)
+
+        # Create message text
+        message_text = f"🎬 **New Movie Added**\n\n"
+        message_text += f"**📽️ Movie:** `{movie_name}`\n"
+        message_text += f"**📁 File Name:** `{file_name}`\n"
+        message_text += f"**🆔 File ID:** `{file_id}`\n\n"
+        message_text += f"Click the button below to get the file!"
+
+        # Send to movie update channel
+        await Client.send_message(
+            chat_id=MOVIE_UPDATE_CHANNEL,
+            text=message_text,
+            reply_markup=reply_markup
+        )
+
+    except Exception as e:
+        logger.error(f"Error posting to movie channel: {e}")
+
+def clean_movie_name(file_name):
+    """Extract clean movie name from file name"""
+    import re
+    # Remove common file extensions and quality indicators
+    clean_name = re.sub(r'\.(mkv|mp4|avi|mov|wmv|flv|webm|m4v)$', '', file_name, flags=re.IGNORECASE)
+    clean_name = re.sub(r'\b(720p|1080p|480p|360p|2160p|4k|hdrip|webrip|brrip|dvdrip|cam|ts|tc)\b', '', clean_name, flags=re.IGNORECASE)
+    clean_name = re.sub(r'\b(hindi|english|tamil|telugu|malayalam|kannada|bengali)\b', '', clean_name, flags=re.IGNORECASE)
+    clean_name = re.sub(r'\b(x264|x265|hevc|aac|ac3|dts)\b', '', clean_name, flags=re.IGNORECASE)
+    clean_name = re.sub(r'\s+', ' ', clean_name).strip()
+    return clean_name
+
+async def check_and_update_existing_post(movie_name, new_file_id):
+    """Check if movie already posted and update if necessary"""
+    try:
+        from bot import Client
+        from info import MOVIE_UPDATE_CHANNEL
+
+        # Search recent messages in the channel for the same movie
+        async for message in Client.get_chat_history(MOVIE_UPDATE_CHANNEL, limit=100):
+            if message.text and movie_name.lower() in message.text.lower():
+                try:
+                    # Delete the old post
+                    await message.delete()
+                    logger.info(f"Deleted old post for movie: {movie_name}")
+                    break
+                except Exception as e:
+                    logger.error(f"Error deleting old post: {e}")
+
+    except Exception as e:
+        logger.error(f"Error checking existing posts: {e}")
 
 def clean_file_name(file_name):
     """Clean and format the file name."""
@@ -174,3 +247,43 @@ def unpack_new_file_id(new_file_id):
     )
     return file_id
     
+# Placeholder for detect_language function if it's used elsewhere
+async def detect_language(text):
+    # Replace with actual language detection logic
+    return ['English']
+
+# Placeholder for Media class if it's used elsewhere
+class Media:
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    async def commit(self):
+        # Replace with actual database commit logic
+        pass
+
+# Placeholder for Bot client if it's used elsewhere
+class Client:
+    async def send_message(self, **kwargs):
+        pass
+
+    async def get_chat_history(self, **kwargs):
+        pass
+
+# Placeholder for temp object if it's used elsewhere
+class temp:
+    U_NAME = "your_bot_username" # Replace with actual username
+
+# Placeholder for logger if it's used elsewhere
+class logger:
+    @staticmethod
+    def warning(msg, *args):
+        print(f"WARNING: {msg % args}")
+
+    @staticmethod
+    def info(msg, *args):
+        print(f"INFO: {msg % args}")
+
+    @staticmethod
+    def error(msg, *args):
+        print(f"ERROR: {msg % args}")
