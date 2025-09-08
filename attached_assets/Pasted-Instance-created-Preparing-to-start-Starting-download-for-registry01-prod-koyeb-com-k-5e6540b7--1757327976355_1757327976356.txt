@@ -1,0 +1,104 @@
+Instance created. Preparing to start...
+Starting download for registry01.prod.koyeb.com/k-5e6540b7-bfd5-4246-9382-abfa6360bab5/014bdb06-0a7b-4c9f-91f3-84090481e3ee:69d8d408-1a69-40e0-98ce-40847d805d73
+Download progress: 100% |[32m++++++++[0m| (99.3 MiB/s)
+Instance is starting... Waiting for health checks to pass.
+
+
+Initalizing Your Bot
+No additional clients found, using default client
+Tech VJ Imported => channel
+Tech VJ Imported => commands
+Tech VJ Imported => clone
+Tech VJ Imported => misc
+Tech VJ Imported => pm_filter
+Tech VJ Imported => p_ttishow
+Tech VJ Imported => connection
+Tech VJ Imported => __init__
+Tech VJ Imported => broadcast
+Tech VJ Imported => banned
+Tech VJ Imported => files_delete
+Tech VJ Imported => inline
+Tech VJ Imported => route
+Tech VJ Imported => filters
+Tech VJ Imported => index
+Tech VJ Imported => gfilters
+Tech VJ Imported => genlink
+10:36:42 AM - 63 - root - bot - INFO - 
+████████╗███████╗███████╗██╗  ██╗    ╔██        ██╗       ██╗
+╚═ ██╔══╝██╔════╝██╔════╝██║  ██║     ║██      ██║        ██║
+   ██║    █████╗  ██║      ███████║      ║██    ██║         ██║
+   ██║    ██╔══╝  ██║      ██╔══██║       ║██  ██║  ╔██     ██║
+   ██║    ███████╗███████╗██║  ██║        ║████║   ║████████║
+   ╚═╝    ╚══════╝╚══════╝╚═╝  ╚═╝        ╚════╝   ╚════════╝
+Instance is healthy. All health checks are passing.
+Make Your Bot Admin In Force Subscribe Channel With Full Rights
+10:38:25 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - Invalid base64-encoded string: number of data characters (25) cannot be 1 more than a multiple of 4
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/commands.py", line 530, in start
+    pre, file_id = ((base64.urlsafe_b64decode(data + "=" * (-len(data) % 4))).decode("ascii")).split("_", 1)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/base64.py", line 134, in urlsafe_b64decode
+    return b64decode(s)
+           ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/base64.py", line 88, in b64decode
+    return binascii.a2b_base64(s, strict_mode=validate)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+binascii.Error: Invalid base64-encoded string: number of data characters (25) cannot be 1 more than a multiple of 4
+10:39:13 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - 'str' object has no attribute 'get'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 84, in pm_text
+    await auto_filter(bot, content, message, reply_msg, ai_search)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2582, in auto_filter
+    return await advantage_spell_chok(client, name, msg, reply_msg, ai_search)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2795, in advantage_spell_chok
+    movielist += [movie.get('title') for movie in movies]
+                  ^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
+10:39:13 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - too many values to unpack (expected 2)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/channel.py", line 15, in media
+    await save_file(media)
+  File "/VJ-FILTER-BOT/database/ia_filterdb.py", line 30, in save_file
+    file_id, file_ref = unpack_new_file_id((getattr(media, "file_id", "")))
+    ^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+10:39:13 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - too many values to unpack (expected 2)
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/channel.py", line 15, in media
+    await save_file(media)
+  File "/VJ-FILTER-BOT/database/ia_filterdb.py", line 30, in save_file
+    file_id, file_ref = unpack_new_file_id((getattr(media, "file_id", "")))
+    ^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 2)
+10:39:50 AM - 376 - pyrogram.dispatcher - dispatcher - ERROR - 'str' object has no attribute 'get'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/dispatcher.py", line 363, in handler_worker
+    await handler.callback(self.client, *args)
+  File "/usr/local/lib/python3.12/site-packages/pyrogram/handlers/message_handler.py", line 154, in resolve_future_or_callback
+    await self.original_callback(client, message, *args)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 84, in pm_text
+    await auto_filter(bot, content, message, reply_msg, ai_search)
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2582, in auto_filter
+    return await advantage_spell_chok(client, name, msg, reply_msg, ai_search)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/VJ-FILTER-BOT/plugins/pm_filter.py", line 2795, in advantage_spell_chok
+    movielist += [movie.get('title') for movie in movies]
+                  ^^^^^^^^^
+AttributeError: 'str' object has no attribute 'get'
