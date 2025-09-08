@@ -13,7 +13,7 @@ from Script import script
 from datetime import datetime, date
 from typing import List
 from database.users_chats_db import db
-from database.ia_filterdb import get_poster, unpack_new_file_id
+from database.ia_filterdb import unpack_new_file_id
 from bs4 import BeautifulSoup
 from shortzy import Shortzy
 from datetime import timedelta
