@@ -12,7 +12,7 @@ from typing import Union
 from Script import script
 from datetime import datetime, date
 from typing import List
-from database.users_chats_db import db, check_user_verification_expired
+from database.users_chats_db import db
 from database.ia_filterdb import get_poster, unpack_new_file_id
 from bs4 import BeautifulSoup
 from shortzy import Shortzy
@@ -53,7 +53,7 @@ async def verification_check_task():
     """Background task to check for expired verifications every hour"""
     while True:
         try:
-            await check_user_verification_expired()
+            await db.check_user_verification_expired()
             await asyncio.sleep(3600)  # Check every hour
         except Exception as e:
             logger.error(f"Error in verification check task: {e}")
