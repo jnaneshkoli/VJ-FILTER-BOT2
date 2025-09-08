@@ -71,42 +71,109 @@ async def post_to_movie_channel(file_name, file_id):
         # Create a clean movie name for display
         movie_name = clean_movie_name(file_name)
 
-        # Check if this movie already exists in channel and update/delete old post
-        await check_and_update_existing_post(movie_name, file_id, file_name)
+        # Check if this movie already exists in channel and update existing post
+        post_updated = await check_and_update_existing_post(movie_name, file_id, file_name)
+        
+        # Only create new post if no existing post was updated
+        if not post_updated:
+            # Create inline keyboard with download button
+            buttons = [[
+                InlineKeyboardButton('📥 Get File', url=f'https://telegram.me/{temp.U_NAME}?start=files_{file_id}')
+            ]]
+            reply_markup = InlineKeyboardMarkup(buttons)
 
-        # Create inline keyboard with download button
-        buttons = [[
-            InlineKeyboardButton('📥 Get File', url=f'https://telegram.me/{temp.U_NAME}?start=files_{file_id}')
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)
+            # Create message text
+            message_text = f"🎬 **New Movie Added**\n\n"
+            message_text += f"**📽️ Movie:** `{movie_name}`\n"
+            message_text += f"**📁 File Name:** `{file_name}`\n"
+            message_text += f"**🆔 File ID:** `{file_id}`\n\n"
+            message_text += f"Click the button below to get the file!"
 
-        # Create message text
-        message_text = f"🎬 **New Movie Added**\n\n"
-        message_text += f"**📽️ Movie:** `{movie_name}`\n"
-        message_text += f"**📁 File Name:** `{file_name}`\n"
-        message_text += f"**🆔 File ID:** `{file_id}`\n\n"
-        message_text += f"Click the button below to get the file!"
-
-        # Send to movie update channel
-        await Client.send_message(
-            chat_id=MOVIE_UPDATE_CHANNEL,
-            text=message_text,
-            reply_markup=reply_markup
-        )
+            # Send to movie update channel
+            await Client.send_message(
+                chat_id=MOVIE_UPDATE_CHANNEL,
+                text=message_text,
+                reply_markup=reply_markup
+            )
 
     except Exception as e:
         logger.error(f"Error posting to movie channel: {e}")
 
+def get_file_size_info(file_name):
+    """Extract file size/quality info from filename"""
+    import re
+    # Extract quality indicators
+    quality_patterns = [
+        r'\b(4k|2160p)\b',
+        r'\b(1080p)\b', 
+        r'\b(720p)\b',
+        r'\b(480p)\b',
+        r'\b(360p)\b'
+    ]
+    
+    for pattern in quality_patterns:
+        if re.search(pattern, file_name, re.IGNORECASE):
+            return re.search(pattern, file_name, re.IGNORECASE).group(1).upper()
+    
+    # Check for file size indicators
+    if re.search(r'\b\d+(\.\d+)?\s*(gb|mb)\b', file_name, re.IGNORECASE):
+        size_match = re.search(r'\b(\d+(?:\.\d+)?)\s*(gb|mb)\b', file_name, re.IGNORECASE)
+        if size_match:
+            return f"{size_match.group(1)}{size_match.group(2).upper()}"
+    
+    return "Unknown"
+
 def clean_movie_name(file_name):
     """Extract clean movie name from file name"""
     import re
-    # Remove common file extensions and quality indicators
+    
+    # List of words to ignore/remove from file names
+    ignore_words = [
+        # Quality indicators
+        '720p', '1080p', '480p', '360p', '2160p', '4k', 'hdrip', 'webrip', 'brrip', 
+        'dvdrip', 'cam', 'ts', 'tc', 'hdcam', 'hdts', 'dvdscr', 'r6', 'workprint',
+        
+        # Languages
+        'hindi', 'english', 'tamil', 'telugu', 'malayalam', 'kannada', 'bengali', 
+        'punjabi', 'gujarati', 'marathi', 'dual', 'audio', 'dubbed',
+        
+        # Codecs and formats
+        'x264', 'x265', 'hevc', 'avc', 'aac', 'ac3', 'dts', 'atmos', 'dd', 'ddp',
+        
+        # Release groups and sources
+        'yify', 'rarbg', 'eztv', 'ettv', 'torrent', 'bluray', 'bdrip', 'remux',
+        
+        # File extensions
+        'mkv', 'mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v',
+        
+        # Other common words
+        'season', 'episode', 'complete', 'series', 'collection', 'repack', 'proper',
+        'extended', 'uncut', 'directors', 'cut', 'imax', 'fan', 'edit'
+    ]
+    
+    # Remove file extensions first
     clean_name = re.sub(r'\.(mkv|mp4|avi|mov|wmv|flv|webm|m4v)$', '', file_name, flags=re.IGNORECASE)
-    clean_name = re.sub(r'\b(720p|1080p|480p|360p|2160p|4k|hdrip|webrip|brrip|dvdrip|cam|ts|tc)\b', '', clean_name, flags=re.IGNORECASE)
-    clean_name = re.sub(r'\b(hindi|english|tamil|telugu|malayalam|kannada|bengali)\b', '', clean_name, flags=re.IGNORECASE)
-    clean_name = re.sub(r'\b(x264|x265|hevc|aac|ac3|dts)\b', '', clean_name, flags=re.IGNORECASE)
+    
+    # Remove ignore words
+    for word in ignore_words:
+        clean_name = re.sub(rf'\b{re.escape(word)}\b', '', clean_name, flags=re.IGNORECASE)
+    
+    # Remove year patterns like (2023) or [2023]
+    clean_name = re.sub(r'[\(\[]?\b(19|20)\d{2}\b[\)\]]?', '', clean_name)
+    
+    # Remove size indicators like 2.5GB, 700MB etc
+    clean_name = re.sub(r'\b\d+(\.\d+)?\s*(gb|mb)\b', '', clean_name, flags=re.IGNORECASE)
+    
+    # Remove brackets and their contents
+    clean_name = re.sub(r'[\[\(].*?[\]\)]', '', clean_name)
+    
+    # Remove multiple spaces and trim
     clean_name = re.sub(r'\s+', ' ', clean_name).strip()
-    return clean_name
+    
+    # Remove leading/trailing dots, dashes, underscores
+    clean_name = re.sub(r'^[\.\-_\s]+|[\.\-_\s]+$', '', clean_name)
+    
+    return clean_name if clean_name else file_name
 
 async def check_and_update_existing_post(movie_name, new_file_id, new_file_name):
     """Check if movie already posted and add new file to existing post"""
@@ -285,18 +352,23 @@ def encode_file_id(s: bytes) -> str:
     return base64.urlsafe_b64encode(r).decode().rstrip("=")
 
 def unpack_new_file_id(new_file_id):
-    """Return file_id"""
-    decoded = FileId.decode(new_file_id)
-    file_id = encode_file_id(
-        pack(
-            "<iiqq",
-            int(decoded.file_type),
-            decoded.dc_id,
-            decoded.media_id,
-            decoded.access_hash
+    """Return file_id and file_ref"""
+    try:
+        decoded = FileId.decode(new_file_id)
+        file_id = encode_file_id(
+            pack(
+                "<iiqq",
+                int(decoded.file_type),
+                decoded.dc_id,
+                decoded.media_id,
+                decoded.access_hash
+            )
         )
-    )
-    return file_id
+        file_ref = ""  # Return empty file_ref as second value
+        return file_id, file_ref
+    except Exception as e:
+        logger.error(f"Error unpacking file_id: {e}")
+        return new_file_id, ""
 
 # Placeholder for detect_language function if it's used elsewhere
 async def detect_language(text):

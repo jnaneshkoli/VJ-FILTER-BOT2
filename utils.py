@@ -12,8 +12,8 @@ from typing import Union
 from Script import script
 from datetime import datetime, date
 from typing import List
-from database.users_chats_db import db
-from database.join_reqs import JoinReqs
+from database.users_chats_db import db, check_user_verification_expired
+from database.ia_filterdb import get_poster, unpack_new_file_id
 from bs4 import BeautifulSoup
 from shortzy import Shortzy
 from datetime import timedelta
@@ -48,6 +48,19 @@ class temp(object):
     SETTINGS = {}
     IMDB_CAP = {}
 
+# Background task for checking expired verifications
+async def verification_check_task():
+    """Background task to check for expired verifications every hour"""
+    while True:
+        try:
+            await check_user_verification_expired()
+            await asyncio.sleep(3600)  # Check every hour
+        except Exception as e:
+            logger.error(f"Error in verification check task: {e}")
+            await asyncio.sleep(3600)
+
+# Start the background task
+asyncio.create_task(verification_check_task())
 
 async def pub_is_subscribed(bot, query, channel):
     btn = []
