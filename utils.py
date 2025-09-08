@@ -20,7 +20,8 @@ from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-join_db = JoinReqs
+from database.join_reqs import JoinReqs
+join_db = JoinReqs()
 BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\((buttonurl|buttonalert):(?:/{0,2})(.+?)(:same)?\))")
 
 imdb = Cinemagoer()
