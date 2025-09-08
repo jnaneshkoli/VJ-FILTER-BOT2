@@ -72,7 +72,7 @@ async def post_to_movie_channel(file_name, file_id):
         movie_name = clean_movie_name(file_name)
 
         # Check if this movie already exists in channel and update/delete old post
-        await check_and_update_existing_post(movie_name, file_id)
+        await check_and_update_existing_post(movie_name, file_id, file_name)
 
         # Create inline keyboard with download button
         buttons = [[
@@ -108,34 +108,85 @@ def clean_movie_name(file_name):
     clean_name = re.sub(r'\s+', ' ', clean_name).strip()
     return clean_name
 
-async def check_and_update_existing_post(movie_name, new_file_id):
-    """Check if movie already posted and update if necessary"""
+async def check_and_update_existing_post(movie_name, new_file_id, new_file_name):
+    """Check if movie already posted and add new file to existing post"""
     try:
         from bot import Client
-        from info import MOVIE_UPDATE_CHANNEL
+        from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+        from info import MOVIE_UPDATE_CHANNEL, temp
+        import re
 
         # Search recent messages in the channel for the same movie
         async for message in Client.get_chat_history(MOVIE_UPDATE_CHANNEL, limit=100):
             if message.text and movie_name.lower() in message.text.lower():
                 try:
-                    # Delete the old post
-                    await message.delete()
-                    logger.info(f"Deleted old post for movie: {movie_name}")
-                    break
+                    # Extract existing file IDs from the message text
+                    existing_files = []
+                    file_id_pattern = r"🆔 File ID: `([^`]+)`"
+                    existing_file_ids = re.findall(file_id_pattern, message.text)
+
+                    # Extract existing file names
+                    file_name_pattern = r"📁 File Name: `([^`]+)`"
+                    existing_file_names = re.findall(file_name_pattern, message.text)
+
+                    # Combine existing files
+                    for i, file_id in enumerate(existing_file_ids):
+                        if i < len(existing_file_names):
+                            existing_files.append({
+                                'id': file_id,
+                                'name': existing_file_names[i]
+                            })
+
+                    # Add new file to the list
+                    existing_files.append({
+                        'id': new_file_id,
+                        'name': new_file_name
+                    })
+
+                    # Create updated message text with all files
+                    updated_text = f"🎬 **Movie Files Available**\n\n"
+                    updated_text += f"**📽️ Movie:** `{movie_name}`\n\n"
+                    updated_text += f"**📁 Available Files ({len(existing_files)}):**\n\n"
+
+                    # Create buttons for each file
+                    buttons = []
+                    for idx, file_info in enumerate(existing_files, 1):
+                        updated_text += f"**{idx}. File Name:** `{file_info['name']}`\n"
+                        updated_text += f"**🆔 File ID:** `{file_info['id']}`\n\n"
+
+                        # Create button for each file
+                        file_size_info = get_file_size_info(file_info['name'])
+                        button_text = f"📥 Get File {idx} ({file_size_info})"
+                        buttons.append([InlineKeyboardButton(button_text, url=f"https://telegram.me/{temp.U_NAME}?start=files_{file_info['id']}")])
+
+                    updated_text += f"**🔄 Last Updated:** Just now\n\n"
+                    updated_text += f"Choose your preferred quality/size from the buttons below!"
+
+                    reply_markup = InlineKeyboardMarkup(buttons)
+
+                    # Edit the existing message with all files
+                    await message.edit_text(
+                        text=updated_text,
+                        reply_markup=reply_markup
+                    )
+                    logger.info(f"Added new file to existing post for movie: {movie_name}")
+                    return True  # Return True to indicate post was updated
                 except Exception as e:
-                    logger.error(f"Error deleting old post: {e}")
+                    logger.error(f"Error updating existing post: {e}")
 
     except Exception as e:
         logger.error(f"Error checking existing posts: {e}")
+
+    return False  # Return False to indicate no existing post was found/updated
 
 def clean_file_name(file_name):
     """Clean and format the file name."""
     file_name = re.sub(r"(_|\-|\.|\+)", " ", str(file_name)) 
     unwanted_chars = ['[', ']', '(', ')', '{', '}']
-    
+
     for char in unwanted_chars:
         file_name = file_name.replace(char, '')
-        
+
     return ' '.join(filter(lambda x: not x.startswith('@') and not x.startswith('http') and not x.startswith('www.') and not x.startswith('t.me'), file_name.split()))
 
 def is_file_already_saved(file_id, file_name):
@@ -147,12 +198,12 @@ def is_file_already_saved(file_id, file_name):
         if collection.find_one(found1) or collection.find_one(found):
             print(f"{file_name} is already saved.")
             return True
-            
+
     return False
 
 async def get_search_results(chat_id, query, file_type=None, max_results=10, offset=0, filter=False):
     """For given query return (results, next_offset)"""
-    
+
     query = query.strip()
     if not query:
         raw_pattern = '.'
@@ -169,14 +220,14 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
     if MULTIPLE_DATABASE:
         cursor1 = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
         cursor2 = sec_col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
-        
+
         for file in cursor1:
             files.append(file)
         for file in cursor2:
             files.append(file)
     else:
         cursor = col.find(filter).sort('$natural', -1).skip(offset).limit(max_results)
-        
+
         for file in cursor:
             files.append(file)
 
@@ -188,14 +239,14 @@ async def get_search_results(chat_id, query, file_type=None, max_results=10, off
 async def get_bad_files(query, file_type=None, use_filter=False):
     """For given query return (results, next_offset)"""
     query = query.strip()
-    
+
     if not query:
         raw_pattern = '.'
     elif ' ' not in query:
         raw_pattern = rf'(\b|[.+-_]){query}(\b|[.+-_])'
     else:
         raw_pattern = query.replace(' ', r'.*[s.+-_]')
-    
+
     try:
         regex = re.compile(raw_pattern, flags=re.IGNORECASE)
     except re.error:
@@ -232,7 +283,7 @@ def encode_file_id(s: bytes) -> str:
                 n = 0
             r += bytes([i])
     return base64.urlsafe_b64encode(r).decode().rstrip("=")
-    
+
 def unpack_new_file_id(new_file_id):
     """Return file_id"""
     decoded = FileId.decode(new_file_id)
@@ -246,7 +297,7 @@ def unpack_new_file_id(new_file_id):
         )
     )
     return file_id
-    
+
 # Placeholder for detect_language function if it's used elsewhere
 async def detect_language(text):
     # Replace with actual language detection logic
