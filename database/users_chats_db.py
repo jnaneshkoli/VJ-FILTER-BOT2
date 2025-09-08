@@ -353,7 +353,7 @@ class Database:
         else:
             await self.add_user(int(id), user.get('name', 'Unknown')) # Changed from add_user to self.add_user and added user name
 
-    async def send_verification_notification(user_id, user_data):
+    async def send_verification_notification(self, user_id, user_data):
         """Send notification to admin when user gets verified"""
         try:
             from bot import Client # Assuming Client is imported elsewhere
@@ -431,5 +431,7 @@ class Database:
                     }}
                 )
                 logger.log(logging.INFO, f"Verification expired for user {user['id']}") # Changed from logger.info to logger.log
+        except Exception as e:
+            logger.error(f"Error checking expired verifications: {e}")
 
 db = Database(USER_DB_URI, DATABASE_NAME)
